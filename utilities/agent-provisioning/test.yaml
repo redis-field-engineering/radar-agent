@@ -1,0 +1,20 @@
+deployment:
+  - id: "one-cluster"
+    name: "test one"
+    type: "ENTERPRISE"
+    auto_discover: true
+    rest_api:
+      host: "localhost"
+      port: 1943
+    credentials:
+      enterprise_api:
+        basic_auth: "${ADMIN_USER}:${ADMIN_PWD}"
+  - id: "two-cluster"
+    name: "test two"
+    type: "ENTERPRISE"
+    redis_urls: "redis://redis-1200.localhost:12000"
+    rest_api:
+      port: 4943
+    credentials:
+      enterprise_api:
+        basic_auth: "${ADMIN_USER}:${ADMIN_PWD}"
