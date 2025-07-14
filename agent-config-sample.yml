@@ -1,0 +1,154 @@
+# =============================================================================
+# Radar Agent Configuration File
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Agent Section - Global agent configuration
+# -----------------------------------------------------------------------------
+agent:
+  # Unique identifier for this agent instance
+  id: "agent-1"
+
+  # Hostname for this agent (defaults to system hostname if not specified)
+  hostname: "redis-telemetry-node"
+
+  # Key-value labels to attach to this agent
+  # These will be included with all data sent to the server
+  labels:
+    env: "production"
+    region: "us-west-2"
+    team: "database-ops"
+
+
+  # Log level: trace, debug, info, warn, error
+  log_level: "info"
+
+  # Collection interval with time unit (s, m, h)
+  # How frequently the agent will collect metrics from Redis instances
+  collection_interval: "60s"
+
+# -----------------------------------------------------------------------------
+# Server Section - gRPC server connection configuration
+# -----------------------------------------------------------------------------
+server:
+  # URL of the Radar server's gRPC endpoint
+  grpc_url: "https://grpc.radar.redis.io:443"
+
+  # API key for authenticating with the Radar server
+  api_key: "your-api-key-here"
+
+  # Send interval with time unit (s, m, h)
+  # How frequently the agent will send metrics to the server
+  send_interval: "60s"
+
+  # Maximum number of batches to queue before applying backpressure
+  max_batch_size: 100
+
+# -----------------------------------------------------------------------------
+# Deployments Sections - One for each Redis deployment to monitor
+# -----------------------------------------------------------------------------
+
+# Example 1: Redis Standalone Instance
+deployments:
+  - # Unique identifier for this deployment
+    id: "redis-prod-1"
+
+    # Human-readable name for this deployment
+    name: "Production Redis"
+
+    # Type of Redis deployment (case-insensitive)
+    # Valid values: STANDALONE, SENTINEL, CLUSTER, ENTERPRISE, CLOUD
+    type: "STANDALONE"
+
+    # Redis connection URL (can use redis_url for a single URL)
+    redis_url: "redis://redis.example.com:6379"
+
+  # Example 2: Redis Cluster
+  - id: "redis-cluster-1"
+    name: "Production Cluster"
+    type: "CLUSTER"
+
+    # For clusters, you can specify multiple nodes using redis_urls
+    redis_urls:
+      - "redis://redis-cluster-0.example.com:6379"
+      - "redis://redis-cluster-1.example.com:6379"
+
+    # Enable automatic discovery of additional nodes
+    # When true, the agent will discover and add other nodes in the cluster
+    auto_discover: true
+
+  # Example 3: Redis Enterprise
+  - id: "redis-enterprise-1"
+    name: "Enterprise Deployment"
+    type: "ENTERPRISE"
+
+    # For Enterprise, specify at least one node
+    redis_urls:
+      - "redis://redis-enterprise.example.com:12000"
+
+    # Enable automatic discovery of additional databases
+    # When true, the agent will discover and add other databases in the Enterprise deployment
+    auto_discover: true
+
+    # REST API configuration for Redis Enterprise
+    # Required for collecting Enterprise-specific metrics
+    rest_api:
+      # REST API host (defaults to the redis_url host if not specified)
+      host: "redis-enterprise.example.com"
+
+      # REST API port (defaults to 9443 if not specified)
+      port: 9443
+
+    # Credentials configuration
+    credentials:
+      # Redis authentication (applied to all redis_urls without auth)
+      redis:
+        username: "default"
+        password: "redis_password123"
+        # Can also use environment variables: username: "${REDIS_USERNAME}"
+
+      # REST API authentication
+      rest_api:
+        basic_auth: "admin@cluster.local:password123"
+        # Can also use environment variables: basic_auth: "${REDIS_ENTERPRISE_AUTH}"
+
+  # Example 4: Redis Sentinel
+  - id: "redis-sentinel-1"
+    name: "Sentinel Deployment"
+    type: "SENTINEL"
+
+    # For Sentinel, specify the sentinel nodes
+    redis_urls:
+      - "redis://sentinel-1.example.com:26379"
+      - "redis://sentinel-2.example.com:26379"
+      - "redis://sentinel-3.example.com:26379"
+
+    # Enable auto-discovery to find master and replica nodes
+    auto_discover: true
+
+  # Example 5: Redis Cloud
+  - id: "redis-cloud-1"
+    name: "Redis Cloud"
+    type: "CLOUD"
+    redis_url: "redis://redis-cloud.example.com:6379"
+
+    # REST API configuration for Redis Cloud
+    rest_api:
+      host: "api.redislabs.com"
+      port: 443
+
+    # Credentials configuration
+    credentials:
+      # Redis authentication (applied to all redis_urls without auth)
+      redis:
+        username: "default"
+        password: "redis_cloud_password"
+        # Can also use environment variables: password: "${REDIS_CLOUD_PASSWORD}"
+
+      # Cloud REST API authentication
+      cloud_api:
+        account_key: "your_account_key"  # Maps to x-api-key header
+        user_key: "your_user_key"        # Maps to x-api-secret-key header
+        # Can also use environment variables:
+        # account_key: "${REDIS_CLOUD_ACCOUNT_KEY}"
+        # user_key: "${REDIS_CLOUD_USER_KEY}"
