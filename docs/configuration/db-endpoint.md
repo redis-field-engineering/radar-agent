@@ -1,6 +1,8 @@
 # Redis Enterprise Preferred Database Endpoint Configuration
 
-New `enterprise` configuration section with flexible endpoint selection based on actual BDBS API endpoint data.
+This configuration is used in combination with `auto_discover: true` to guide the agent which of the Redis Enterprise database endpoints to use.
+
+Inside the `enterprise` configuration section there  flexible endpoint selection based on actual BDBS API endpoint data.
 
 ## Complete Configuration Options
 
@@ -9,10 +11,7 @@ deployments:
   - id: "redis-enterprise-prod"
     name: "Production Enterprise Cluster"
     type: "ENTERPRISE"
-    redis_urls:
-      - "redis://redis-enterprise.example.com:12000"
-    
-    # NEW: Choose how to connect to discovered databases
+
     enterprise:
       db_endpoint: "external_ip"  # Choose one of the 4 options below
       
@@ -24,7 +23,7 @@ deployments:
         basic_auth: "admin:password"
 ```
 
-## All Available Options
+## Available Options
 
 | Option | Description | When to Use | Example Result |
 |--------|-------------|-------------|----------------|
