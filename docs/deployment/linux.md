@@ -1,4 +1,4 @@
-# Redis Radar Agent Deployment Guide
+# Redis Radar Agent Deployment Guide for Linux
 
 This guide covers deployment methods for the `redis-radar-agent` binary on Linux systems with systemd (Ubuntu 18.04+, RHEL/CentOS 7+, Fedora, etc.).
 
