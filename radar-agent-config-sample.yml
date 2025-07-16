@@ -19,7 +19,6 @@ agent:
     region: "us-west-2"
     team: "database-ops"
 
-
   # Log level: trace, debug, info, warn, error
   log_level: "info"
 
@@ -32,7 +31,7 @@ agent:
 # -----------------------------------------------------------------------------
 server:
   # URL of the Radar server's gRPC endpoint
-  grpc_url: "https://grpc.radar.redis.io:443"
+  grpc_url: "https://radar.example.com:50051"
 
   # API key for authenticating with the Radar server
   api_key: "your-api-key-here"
@@ -99,6 +98,17 @@ deployments:
       # REST API port (defaults to 9443 if not specified)
       port: 9443
 
+      # Optional: Override the enterprise admin URL (defaults to host:port if not specified)
+      # Use this when the admin interface is on a different port than the REST API
+      enterprise_admin_url: "https://redis-enterprise.example.com:8443"
+
+    # Enterprise-specific configuration
+    enterprise:
+      # Database endpoint type to use for discovered databases
+      # Valid values: internal_dns, internal_ip, external_dns, external_ip
+      # Default: external_ip
+      db_endpoint: "external_ip"
+
     # Credentials configuration
     credentials:
       # Redis authentication (applied to all redis_urls without auth)
@@ -147,8 +157,8 @@ deployments:
 
       # Cloud REST API authentication
       cloud_api:
-        account_key: "your_account_key"  # Maps to x-api-key header
-        user_key: "your_user_key"        # Maps to x-api-secret-key header
+        account_key: "your_account_key" # Maps to x-api-key header
+        user_key: "your_user_key" # Maps to x-api-secret-key header
         # Can also use environment variables:
         # account_key: "${REDIS_CLOUD_ACCOUNT_KEY}"
         # user_key: "${REDIS_CLOUD_USER_KEY}"
