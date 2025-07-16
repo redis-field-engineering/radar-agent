@@ -132,7 +132,7 @@ jobs:
       - name: Get tag name
         id: tag
         run: |
-          echo "tag_name=${{ github.event.client_payload.tag }}" >> $GITHUB_OUTPUT
+          echo "tag_name=${{ github.event.client_payload.ref }}" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
