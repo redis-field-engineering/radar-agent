@@ -37,7 +37,7 @@ VOLUME ["/certs", "/etc/agent"]
 
 # Healthcheck for orchestrators
 HEALTHCHECK --interval=30s --timeout=5s \
-  CMD ["radar-agent", "--health"] || exit 1
+  CMD ["/usr/local/bin/radar-agent", "--health"] || exit 1
 
-ENTRYPOINT ["radar-agent"]
+ENTRYPOINT ["/usr/local/bin/radar-agent"]
 CMD ["--config", "/etc/agent/config.yaml"]
