@@ -22,14 +22,13 @@ RUN mkdir -p /certs /etc/agent /home/appuser/bin && \
 COPY --chown=appuser:appuser radar-agent-config-sample.yml /etc/agent/config.yaml
 
 # Copy the agent binary
-COPY --chown=appuser:appuser ${BINARY} /home/appuser/bin/agent
-RUN chmod +x /home/appuser/bin/agent
+COPY ${BINARY} /usr/local/bin/radar-agent
+RUN chmod +x /usr/local/bin/radar-agent
 
 USER appuser
 
 # Environment defaults
-ENV PATH="/home/appuser/bin:${PATH}" \
-    AGENT_CONFIG=/etc/agent/config.yaml \
+ENV AGENT_CONFIG=/etc/agent/config.yaml \
     AGENT_TLS_CERT=/certs/server.pem \
     AGENT_TLS_KEY=/certs/server.key
 
@@ -38,7 +37,7 @@ VOLUME ["/certs", "/etc/agent"]
 
 # Healthcheck for orchestrators
 HEALTHCHECK --interval=30s --timeout=5s \
-  CMD ["agent", "--health"] || exit 1
+  CMD ["radar-agent", "--health"] || exit 1
 
-ENTRYPOINT ["agent"]
+ENTRYPOINT ["radar-agent"]
 CMD ["--config", "/etc/agent/config.yaml"]

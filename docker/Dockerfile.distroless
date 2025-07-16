@@ -26,7 +26,7 @@ USER root
 RUN mkdir -p /certs
 
 # Copy binary & CA cert
-COPY --from=unpack /app/agent /usr/local/bin/agent
+COPY --from=unpack /app/agent /usr/local/bin/radar-agent
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 # Set ownership and volumes
@@ -37,7 +37,7 @@ ENV AGENT_TLS_CERT=/certs/server.pem \
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s \
-  CMD ["/usr/local/bin/agent", "--health"] || exit 1
+  CMD ["/usr/local/bin/radar-agent", "--health"] || exit 1
 
-ENTRYPOINT ["/usr/local/bin/agent"]
+ENTRYPOINT ["/usr/local/bin/radar-agent"]
 CMD ["--help"]
