@@ -33,7 +33,7 @@ ENV AGENT_CONFIG=/etc/agent/config.yaml \
     AGENT_TLS_KEY=/certs/server.key
 
 # Expose volumes for certs and config
-VOLUME ["/certs", "/etc/agent"]
+VOLUME ["/certs", "/etc/agent!"]
 
 # Healthcheck for orchestrators
 HEALTHCHECK --interval=30s --timeout=5s \
