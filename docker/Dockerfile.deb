@@ -1,0 +1,40 @@
+ARG BINARY
+FROM debian:bookworm-slim
+
+LABEL org.opencontainers.image.source="https://github.com/redis-field-engineering/radar" \
+  org.opencontainers.image.licenses="Redis, Inc." \
+  org.opencontainers.image.authors="Radar Team"
+
+# Install CA certificates
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user and necessary directories
+RUN adduser --disabled-password --gecos "" appuser \
+  && mkdir -p /certs /etc/agent /home/appuser/bin \
+  && chown -R appuser:appuser /certs /etc/agent /home/appuser
+
+# Copy default config (customers may override via volume)
+COPY --chown=appuser:appuser agent/radar-agent-config-sample.yml /etc/agent/config.yaml
+
+# Copy the agent binary
+COPY --chown=appuser:appuser ${BINARY} /home/appuser/bin/agent
+USER appuser
+RUN chmod +x /home/appuser/bin/agent
+
+# Environment defaults
+ENV PATH="/home/appuser/bin:${PATH}" \
+  AGENT_CONFIG=/etc/agent/config.yaml \
+  AGENT_TLS_CERT=/certs/server.pem \
+  AGENT_TLS_KEY=/certs/server.key
+
+# Expose volumes for certs and config
+VOLUME ["/certs", "/etc/agent"]
+
+# Healthcheck for orchestrators
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD ["agent", "--health"] || exit 1
+
+ENTRYPOINT ["agent"]
+CMD ["--config", "/etc/agent/config.yaml"]

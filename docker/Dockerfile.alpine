@@ -1,0 +1,38 @@
+ARG BINARY
+FROM alpine:3.18
+
+LABEL org.opencontainers.image.source="https://github.com/redis-field-engineering/radar" \
+  org.opencontainers.image.licenses="Redis, Inc." \
+  org.opencontainers.image.authors="Radar Team"
+
+# Install CA certificates
+RUN apk add --no-cache ca-certificates
+
+# Create non-root user and necessary directories
+RUN adduser -D appuser \
+  && mkdir -p /certs /etc/agent /home/appuser/bin \
+  && chown -R appuser:appuser /certs /etc/agent /home/appuser
+
+# Copy default config (customers may override via volume)
+COPY --chown=appuser:appuser radar-agent-config-sample.yml /etc/agent/config.yaml
+
+# Copy the agent binary
+COPY --chown=appuser:appuser ${BINARY} /home/appuser/bin/agent
+USER appuser
+RUN chmod +x /home/appuser/bin/agent
+
+# Environment defaults
+ENV PATH="/home/appuser/bin:${PATH}" \
+  AGENT_CONFIG=/etc/agent/config.yaml \
+  AGENT_TLS_CERT=/certs/server.pem \
+  AGENT_TLS_KEY=/certs/server.key
+
+# Expose volumes for certs and config
+VOLUME ["/certs", "/etc/agent"]
+
+# Healthcheck for orchestrators
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD ["agent", "--health"] || exit 1
+
+ENTRYPOINT ["agent"]
+CMD ["--config", "/etc/agent/config.yaml"]

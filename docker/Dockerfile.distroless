@@ -1,0 +1,43 @@
+# Declare build-arg globally
+ARG BINARY
+
+# Stage 1: extract CA bundle
+FROM debian:bookworm-slim AS certs
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+# Stage 2: copy agent binary
+FROM busybox:1.35-uclibc AS unpack
+ARG BINARY
+COPY ${BINARY} /app/agent
+RUN chmod +x /app/agent
+
+# Stage 3: distroless runtime
+FROM gcr.io/distroless/cc:nonroot
+
+LABEL org.opencontainers.image.source="https://github.com/redis-field-engineering/radar" \
+      org.opencontainers.image.licenses="Redis, Inc." \
+      org.opencontainers.image.authors="Radar Team" \
+      org.opencontainers.image.description="Radar telemetry agent"
+
+# Create dirs
+USER root
+RUN mkdir -p /certs
+
+# Copy binary & CA cert
+COPY --from=unpack /app/agent /usr/local/bin/agent
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+# Set ownership and volumes
+# (final image is nonroot by default)
+VOLUME ["/certs"]
+ENV AGENT_TLS_CERT=/certs/server.pem \
+    AGENT_TLS_KEY=/certs/server.key
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD ["/usr/local/bin/agent", "--health"] || exit 1
+
+ENTRYPOINT ["/usr/local/bin/agent"]
+CMD ["--help"]
