@@ -31,7 +31,7 @@ agent:
 # -----------------------------------------------------------------------------
 server:
   # URL of the Radar server's gRPC endpoint
-  grpc_url: "https://radar.example.com:50051"
+  grpc_url: "https://grpc.radar.redis.io:443"
 
   # API key for authenticating with the Radar server
   api_key: "your-api-key-here"
