@@ -28,9 +28,9 @@ jobs:
           repo: redis-field-engineering/radar
           path: ./binaries
 
-      - name: Prepare binaries for Docker build
+      - name: Prepare binaries for Docker build and release
         run: |
-          # Copy binaries to expected locations
+          # Copy all binaries to root for consistent access
           cp ./binaries/radar-agent-linux/radar-agent-linux ./radar-agent-linux
           cp ./binaries/radar-agent-linux-musl/radar-agent-linux-musl ./radar-agent-linux-musl
           cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin
@@ -44,13 +44,14 @@ jobs:
           # Verify binaries
           ls -la radar-agent-*
 
-      - name: Upload binaries for Docker build
+      - name: Upload binaries for Docker build and release
         uses: actions/upload-artifact@v4
         with:
           name: agent-binaries
           path: |
             radar-agent-linux
             radar-agent-linux-musl
+            radar-agent-darwin
           retention-days: 1
 
   docker:
