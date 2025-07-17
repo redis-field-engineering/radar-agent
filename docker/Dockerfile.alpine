@@ -1,5 +1,6 @@
-ARG BINARY
 FROM alpine:3.18
+
+ARG BINARY
 
 LABEL org.opencontainers.image.source="https://github.com/redis-field-engineering/radar" \
   org.opencontainers.image.licenses="Redis, Inc." \

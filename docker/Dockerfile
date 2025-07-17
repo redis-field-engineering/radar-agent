@@ -1,5 +1,6 @@
-ARG BINARY
 FROM debian:bookworm-slim
+
+ARG BINARY
 
 LABEL org.opencontainers.image.source="https://github.com/redis-field-engineering/radar-agent" \
   org.opencontainers.image.licenses="Redis, Inc." \
