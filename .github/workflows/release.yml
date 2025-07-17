@@ -33,9 +33,10 @@ jobs:
           # Copy binaries to expected locations
           cp ./binaries/radar-agent-linux/radar-agent-linux ./radar-agent-linux
           cp ./binaries/radar-agent-linux-musl/radar-agent-linux-musl ./radar-agent-linux-musl
+          cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin
 
           # Make binaries executable
-          chmod +x radar-agent-linux radar-agent-linux-musl
+          chmod +x radar-agent-*
 
           # Log what we received
           echo "✅ Downloaded binaries for tag: ${{ github.event.client_payload.ref }}"
@@ -139,6 +140,10 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.tag_name }}
           name: "Radar Agent ${{ steps.tag.outputs.tag_name }}"
+          files: |
+            radar-agent-linux
+            radar-agent-linux-musl
+            radar-agent-darwin
           body: |
             ## Radar Agent Release ${{ steps.tag.outputs.tag_name }}
 
