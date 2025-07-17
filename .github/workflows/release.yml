@@ -130,6 +130,12 @@ jobs:
     needs: [docker]
     runs-on: ubuntu-latest
     steps:
+      - name: Download binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: agent-binaries
+          path: ./
+
       - name: Get tag name
         id: tag
         run: |
