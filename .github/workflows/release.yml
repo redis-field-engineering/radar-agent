@@ -150,11 +150,13 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          git_user_signingkey: true
+          git_tag_gpgsign: true
 
       - name: Create signed tag for this repository
         run: |
-          # Create and sign the same tag locally for this repository
-          git tag -s ${{ steps.tag.outputs.tag_name }} -m "Release ${{ steps.tag.outputs.tag_name }}" --force
+          # Create tag (will be automatically signed due to git_tag_gpgsign: true)
+          git tag ${{ steps.tag.outputs.tag_name }} -m "Release ${{ steps.tag.outputs.tag_name }}" --force
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
