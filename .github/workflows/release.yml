@@ -157,6 +157,9 @@ jobs:
         run: |
           # Create tag (will be automatically signed due to git_tag_gpgsign: true)
           git tag ${{ steps.tag.outputs.tag_name }} -m "Release ${{ steps.tag.outputs.tag_name }}" --force
+          
+          # Push the signed tag to the repository
+          git push origin ${{ steps.tag.outputs.tag_name }} --force
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
