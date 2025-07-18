@@ -131,6 +131,9 @@ jobs:
     needs: [docker]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout radar-agent repo
+        uses: actions/checkout@v4
+
       - name: Download binaries
         uses: actions/download-artifact@v4
         with:
@@ -142,8 +145,19 @@ jobs:
         run: |
           echo "tag_name=${{ github.event.client_payload.ref }}" >> $GITHUB_OUTPUT
 
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Create signed tag for this repository
+        run: |
+          # Create and sign the same tag locally for this repository
+          git tag -s ${{ steps.tag.outputs.tag_name }} -m "Release ${{ steps.tag.outputs.tag_name }}" --force
+
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag_name }}
           name: "Radar Agent ${{ steps.tag.outputs.tag_name }}"
@@ -151,6 +165,7 @@ jobs:
             radar-agent-linux
             radar-agent-linux-musl
             radar-agent-darwin
+          make_latest: true
           body: |
             ## Radar Agent Release ${{ steps.tag.outputs.tag_name }}
 
