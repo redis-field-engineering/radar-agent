@@ -9,8 +9,6 @@ Radar Agent connects to one or more Redis instances or deployments, collects met
 - Standalone instances
 - Redis Enterprise clusters
 - OSS clusters
-- Sentinel deployments
-- Redis Cloud
 
 ## Installation
 
@@ -103,41 +101,6 @@ deployments:
       # Enterprise REST API authentication
       enterprise_api:
         basic_auth: "admin@cluster.local:password123"
-```
-
-#### Redis Sentinel
-
-```yaml
-deployments:
-  - id: "redis-sentinel"
-    name: "Redis Sentinel"
-    type: "SENTINEL"
-    redis_urls:
-      - "redis://sentinel-1.example.com:26379"
-      - "redis://sentinel-2.example.com:26379"
-    auto_discover: true
-```
-
-#### Redis Cloud
-
-```yaml
-deployments:
-  - id: "redis-cloud"
-    name: "Redis Cloud"
-    type: "CLOUD"
-    redis_url: "redis://redis-cloud.example.com:6379"
-    rest_api:
-      host: "api.redislabs.com"
-      port: 443
-    credentials:
-      # Redis authentication (applied to all redis_urls without auth)
-      redis:
-        username: "default"
-        password: "redis_cloud_password"
-      # Cloud REST API authentication
-      cloud_api:
-        account_key: "your_account_key" # Maps to x-api-key header
-        user_key: "your_user_key" # Maps to x-api-secret-key header
 ```
 
 ### Credentials and Environment Variables

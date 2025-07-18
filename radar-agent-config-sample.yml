@@ -56,7 +56,7 @@ deployments:
     name: "Production Redis"
 
     # Type of Redis deployment (case-insensitive)
-    # Valid values: STANDALONE, SENTINEL, CLUSTER, ENTERPRISE, CLOUD
+    # Valid values: STANDALONE, CLUSTER, ENTERPRISE
     type: "STANDALONE"
 
     # Redis connection URL (can use redis_url for a single URL)
@@ -121,6 +121,3 @@ deployments:
       rest_api:
         basic_auth: "admin@cluster.local:password123"
         # Can also use environment variables: basic_auth: "${REDIS_ENTERPRISE_AUTH}"
-
-  # NOTE: SENTINEL and CLOUD types are not currently supported
-  # Supported types: STANDALONE, ENTERPRISE, CLUSTER
