@@ -1,123 +1,129 @@
 # =============================================================================
 # Radar Agent Configuration File
 # =============================================================================
+# Complete documentation: https://redis-field-engineering.github.io/radar/
 
 # -----------------------------------------------------------------------------
 # Agent Section - Global agent configuration
 # -----------------------------------------------------------------------------
 agent:
-  # Unique identifier for this agent instance
-  id: "agent-1"
-
-  # Hostname for this agent (defaults to system hostname if not specified)
-  hostname: "redis-telemetry-node"
-
-  # Key-value labels to attach to this agent
-  # These will be included with all data sent to the server
-  labels:
-    env: "production"
-    region: "us-west-2"
-    team: "database-ops"
-
-  # Log level: trace, debug, info, warn, error
-  log_level: "info"
+  # Unique identifier for this agent instance (required)
+  id: "radar-agent-001"
 
   # Collection interval with time unit (s, m, h)
   # How frequently the agent will collect metrics from Redis instances
+  # Default: 60s
   collection_interval: "60s"
+
+  # Output directory for offline collections
+  # Default: current directory
+  output_directory: "./output"
+
+  # Data redaction level: none, credentials, all
+  # - none: No redaction (not recommended for production)
+  # - credentials: Redact passwords and sensitive fields
+  # - all: Maximum redaction for compliance
+  # Default: all
+  redaction_level: "all"
 
 # -----------------------------------------------------------------------------
 # Server Section - gRPC server connection configuration
 # -----------------------------------------------------------------------------
 server:
-  # URL of the Radar server's gRPC endpoint
-  grpc_url: "https://grpc.radar.redis.io:443"
+  # URL of the Radar server's gRPC endpoint (required)
+  grpc_url: "http://localhost:50051"
 
-  # API key for authenticating with the Radar server
-  api_key: "your-api-key-here"
+  # API key for authenticating with the Radar server (required)
+  # Recommended: Use environment variable for security
+  api_key: "${RADAR_API_KEY}"
 
-  # Send interval with time unit (s, m, h)
-  # How frequently the agent will send metrics to the server
-  send_interval: "60s"
-
-  # Maximum number of batches to queue before applying backpressure
-  max_batch_size: 100
+  # Timeout for server requests with time unit (s, m, h)
+  # Default: 30s
+  timeout: "30s"
 
 # -----------------------------------------------------------------------------
-# Deployments Sections - One for each Redis deployment to monitor
+# Deployments Section - Redis instances to monitor
 # -----------------------------------------------------------------------------
-
-# Example 1: Redis Standalone Instance
 deployments:
-  - # Unique identifier for this deployment
-    id: "redis-prod-1"
+  # Example 1: Standalone Redis Instance
+  - id: "redis-standalone"
+    name: "Local Redis Server"
+    type: "standalone"
+    host: "localhost"
+    port: 6379
+    password: "${REDIS_PASSWORD}"
+    tls: false
 
-    # Human-readable name for this deployment
-    name: "Production Redis"
-
-    # Type of Redis deployment (case-insensitive)
-    # Valid values: STANDALONE, CLUSTER, ENTERPRISE
-    type: "STANDALONE"
-
-    # Redis connection URL (can use redis_url for a single URL)
-    redis_url: "redis://redis.example.com:6379"
-
-  # Example 2: Redis Cluster
-  - id: "redis-cluster-1"
-    name: "Production Cluster"
-    type: "CLUSTER"
-
-    # For clusters, you can specify multiple nodes using redis_urls
-    redis_urls:
-      - "redis://redis-cluster-0.example.com:6379"
-      - "redis://redis-cluster-1.example.com:6379"
-
-    # Enable automatic discovery of additional nodes
-    # When true, the agent will discover and add other nodes in the cluster
-    auto_discover: true
-
-  # Example 3: Redis Enterprise
-  - id: "redis-enterprise-1"
-    name: "Enterprise Deployment"
-    type: "ENTERPRISE"
-
-    # For Enterprise, specify at least one node
-    redis_urls:
-      - "redis://redis-enterprise.example.com:12000"
-
-    # Enable automatic discovery of additional databases
-    # When true, the agent will discover and add other databases in the Enterprise deployment
-    auto_discover: true
-
-    # REST API configuration for Redis Enterprise
-    # Required for collecting Enterprise-specific metrics
-    rest_api:
-      # REST API host (defaults to the redis_url host if not specified)
-      host: "redis-enterprise.example.com"
-
-      # REST API port (defaults to 9443 if not specified)
-      port: 9443
-
-      # Optional: Override the enterprise admin URL (defaults to host:port if not specified)
-      # Use this when the admin interface is on a different port than the REST API
-      enterprise_admin_url: "https://redis-enterprise.example.com:8443"
-
-    # Enterprise-specific configuration
-    enterprise:
-      # Database endpoint type to use for discovered databases
-      # Valid values: internal_dns, internal_ip, external_dns, external_ip
-      # Default: external_ip
-      db_endpoint: "external_ip"
-
-    # Credentials configuration
+  # Example 2: Redis Enterprise Cluster
+  - id: "redis-enterprise"
+    name: "Production Enterprise"
+    type: "enterprise"
     credentials:
-      # Redis authentication (applied to all redis_urls without auth)
-      redis:
-        username: "default"
-        password: "redis_password123"
-        # Can also use environment variables: username: "${REDIS_USERNAME}"
-
-      # REST API authentication
       rest_api:
-        basic_auth: "admin@cluster.local:password123"
-        # Can also use environment variables: basic_auth: "${REDIS_ENTERPRISE_AUTH}"
+        # REST API endpoint (typically port 9443)
+        url: "https://enterprise.example.com:9443"
+
+        # Admin username (usually includes @domain)
+        username: "admin@redis.local"
+
+        # Admin password
+        password: "${ENTERPRISE_PASSWORD}"
+
+        # Set to true to skip certificate verification for self-signed certs
+        insecure: false
+
+        # Optional: Enterprise admin UI URL (typically port 8443)
+        enterprise_admin_url: "https://enterprise.example.com:8443"
+
+  # Example 3: Redis Cluster (OSS)
+  - id: "redis-cluster"
+    name: "Main Cluster"
+    type: "cluster"
+
+    # Initial seed nodes for cluster discovery
+    # The agent will discover all other nodes automatically
+    seed_nodes:
+      - "cluster1.example.com:7000"
+      - "cluster2.example.com:7000"
+      - "cluster3.example.com:7000"
+
+    password: "${CLUSTER_PASSWORD}"
+    tls: false
+
+  # Example 4: Redis Sentinel (High Availability)
+  - id: "redis-sentinel"
+    name: "HA Redis"
+    type: "sentinel"
+
+    # Name of the monitored master
+    master_name: "mymaster"
+
+    # List of Sentinel instances
+    sentinels:
+      - "sentinel1.example.com:26379"
+      - "sentinel2.example.com:26379"
+      - "sentinel3.example.com:26379"
+
+    # Redis instance authentication
+    password: "${REDIS_PASSWORD}"
+
+    # Sentinel authentication (if different from Redis)
+    sentinel_password: "${SENTINEL_PASSWORD}"
+
+    tls: false
+
+# =============================================================================
+# Environment Variable Examples
+# =============================================================================
+# Set these environment variables before running the agent:
+#
+# export RADAR_API_KEY="your-api-key-here"
+# export REDIS_PASSWORD="your-redis-password"
+# export ENTERPRISE_PASSWORD="your-enterprise-password"
+# export CLUSTER_PASSWORD="your-cluster-password"
+# export SENTINEL_PASSWORD="your-sentinel-password"
+#
+# You can also use default values:
+# password: "${REDIS_PASSWORD:-default_password}"
+#
+# =============================================================================
