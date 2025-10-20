@@ -17,16 +17,9 @@ RUN adduser -D appuser \
 # Copy default config (customers may override via volume)
 COPY --chown=appuser:appuser radar-agent-config-sample.yml /etc/agent/config.yaml
 
-# Copy all binaries and select the right one based on platform
-# TARGETARCH is automatically set by buildx (amd64 or arm64)
-COPY radar-agent-linux-musl* /tmp/
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-      cp /tmp/radar-agent-linux-musl-arm64 /usr/local/bin/radar-agent; \
-    else \
-      cp /tmp/radar-agent-linux-musl /usr/local/bin/radar-agent; \
-    fi && \
-    chmod +x /usr/local/bin/radar-agent && \
-    rm -rf /tmp/radar-agent-linux-musl*
+# Copy the agent binary (AMD64 only until musl ARM64 is available)
+COPY radar-agent-linux-musl /usr/local/bin/radar-agent
+RUN chmod +x /usr/local/bin/radar-agent
 USER appuser
 
 # Environment defaults

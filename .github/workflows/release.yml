@@ -31,11 +31,18 @@ jobs:
       - name: Prepare binaries for Docker build and release
         run: |
           # Copy all binaries to root for consistent access
+          # AMD64/x86_64 binaries
           cp ./binaries/radar-agent-linux/radar-agent-linux ./radar-agent-linux
           cp ./binaries/radar-agent-linux-musl/radar-agent-linux-musl ./radar-agent-linux-musl
-          cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin
 
-          # Copy ARM64 binaries if they exist (for multi-arch support)
+          # Darwin x64 (Intel Mac) - check both old and new naming
+          if [ -d "./binaries/radar-agent-darwin-x64" ]; then
+            cp ./binaries/radar-agent-darwin-x64/radar-agent-darwin-x64 ./radar-agent-darwin-x64
+          elif [ -d "./binaries/radar-agent-darwin" ]; then
+            cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin-x64
+          fi
+
+          # ARM64 binaries (if they exist)
           if [ -d "./binaries/radar-agent-linux-arm64" ]; then
             cp ./binaries/radar-agent-linux-arm64/radar-agent-linux-arm64 ./radar-agent-linux-arm64
           fi
@@ -129,7 +136,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpine-${{ steps.tag.outputs.tag_name }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpine-latest
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
+          # Note: ARM64 support requires radar-agent-linux-musl-arm64 binary from upstream
 
   release:
     name: Create Release
@@ -171,28 +179,36 @@ jobs:
           tag_name: ${{ steps.tag.outputs.tag_name }}
           name: "Radar Agent ${{ steps.tag.outputs.tag_name }}"
           files: |
-            radar-agent-linux
-            radar-agent-linux-musl
-            radar-agent-darwin
+            radar-agent-*
           make_latest: true
           body: |
             ## Radar Agent Release ${{ steps.tag.outputs.tag_name }}
 
             ### Quick Install
 
-            **Linux (glibc):**
+            **Linux AMD64 (glibc):**
             ```bash
             curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux" -o radar-agent
             ```
 
-            **Linux (musl):**
+            **Linux AMD64 (musl):**
             ```bash
             curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-musl" -o radar-agent
             ```
 
-            **macOS:**
+            **Linux ARM64:**
             ```bash
-            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-darwin" -o radar-agent
+            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-arm64" -o radar-agent
+            ```
+
+            **macOS Intel (x64):**
+            ```bash
+            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-darwin-x64" -o radar-agent
+            ```
+
+            **macOS Apple Silicon (ARM64):**
+            ```bash
+            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-darwin-arm64" -o radar-agent
             ```
 
             **Install binary:**
