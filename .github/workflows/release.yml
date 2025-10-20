@@ -34,7 +34,6 @@ jobs:
           cp ./binaries/radar-agent-linux/radar-agent-linux ./radar-agent-linux
           cp ./binaries/radar-agent-linux-musl/radar-agent-linux-musl ./radar-agent-linux-musl
           cp ./binaries/radar-agent-linux-arm64/radar-agent-linux-arm64 ./radar-agent-linux-arm64
-            radar-agent-linux-arm64-musl
           cp ./binaries/radar-agent-linux-arm64-musl/radar-agent-linux-arm64-musl ./radar-agent-linux-arm64-musl
           cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin
 
