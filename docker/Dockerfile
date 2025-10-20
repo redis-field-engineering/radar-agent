@@ -1,6 +1,6 @@
 FROM debian:bookworm-slim
 
-ARG BINARY
+ARG TARGETARCH
 
 LABEL org.opencontainers.image.source="https://github.com/redis-field-engineering/radar-agent" \
   org.opencontainers.image.licenses="Redis, Inc." \
@@ -22,9 +22,16 @@ RUN mkdir -p /certs /etc/agent /home/appuser/bin && \
 # Copy default config (customers may override via volume)
 COPY --chown=appuser:appuser radar-agent-config-sample.yml /etc/agent/config.yaml
 
-# Copy the agent binary
-COPY ${BINARY} /usr/local/bin/radar-agent
-RUN chmod +x /usr/local/bin/radar-agent
+# Copy all binaries and select the right one based on platform
+# TARGETARCH is automatically set by buildx (amd64 or arm64)
+COPY radar-agent-linux* /tmp/
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+      cp /tmp/radar-agent-linux-arm64 /usr/local/bin/radar-agent; \
+    else \
+      cp /tmp/radar-agent-linux /usr/local/bin/radar-agent; \
+    fi && \
+    chmod +x /usr/local/bin/radar-agent && \
+    rm -rf /tmp/radar-agent-linux*
 
 USER appuser
 

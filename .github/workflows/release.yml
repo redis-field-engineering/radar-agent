@@ -35,6 +35,17 @@ jobs:
           cp ./binaries/radar-agent-linux-musl/radar-agent-linux-musl ./radar-agent-linux-musl
           cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin
 
+          # Copy ARM64 binaries if they exist (for multi-arch support)
+          if [ -d "./binaries/radar-agent-linux-arm64" ]; then
+            cp ./binaries/radar-agent-linux-arm64/radar-agent-linux-arm64 ./radar-agent-linux-arm64
+          fi
+          if [ -d "./binaries/radar-agent-linux-musl-arm64" ]; then
+            cp ./binaries/radar-agent-linux-musl-arm64/radar-agent-linux-musl-arm64 ./radar-agent-linux-musl-arm64
+          fi
+          if [ -d "./binaries/radar-agent-darwin-arm64" ]; then
+            cp ./binaries/radar-agent-darwin-arm64/radar-agent-darwin-arm64 ./radar-agent-darwin-arm64
+          fi
+
           # Make binaries executable
           chmod +x radar-agent-*
 
@@ -49,9 +60,7 @@ jobs:
         with:
           name: agent-binaries
           path: |
-            radar-agent-linux
-            radar-agent-linux-musl
-            radar-agent-darwin
+            radar-agent-*
           retention-days: 1
 
   docker:
@@ -103,28 +112,24 @@ jobs:
         with:
           context: .
           file: ./docker/Dockerfile
-          build-args: |
-            BINARY=radar-agent-linux
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:debian-${{ steps.tag.outputs.tag_name }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:debian-latest
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
 
       - name: Build and push Alpine image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./docker/Dockerfile.alpine
-          build-args: |
-            BINARY=radar-agent-linux-musl
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpine-${{ steps.tag.outputs.tag_name }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpine-latest
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
 
   release:
     name: Create Release
