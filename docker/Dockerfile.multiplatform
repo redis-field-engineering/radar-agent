@@ -1,0 +1,59 @@
+FROM debian:bookworm-slim
+
+# TARGETARCH is automatically set by Docker buildx (amd64, arm64, etc.)
+ARG TARGETARCH
+
+LABEL org.opencontainers.image.source="https://github.com/redis-field-engineering/radar-agent" \
+  org.opencontainers.image.licenses="Redis, Inc." \
+  org.opencontainers.image.authors="Radar Team"
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libssl3 \
+    ca-certificates \
+    curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    adduser --disabled-password --gecos "" appuser
+
+# Create necessary directories
+RUN mkdir -p /certs /etc/agent /home/appuser/bin && \
+    chown -R appuser:appuser /certs /etc/agent /home/appuser
+
+# Copy default config (customers may override via volume)
+COPY --chown=appuser:appuser radar-agent-config-sample.yml /etc/agent/config.yaml
+
+# Copy the correct binary based on architecture
+# For amd64: use radar-agent-linux
+# For arm64: use radar-agent-linux-arm64
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+      echo "Using AMD64 binary"; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+      echo "Using ARM64 binary"; \
+    fi
+
+COPY radar-agent-linux* /tmp/
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+      cp /tmp/radar-agent-linux /usr/local/bin/radar-agent; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+      cp /tmp/radar-agent-linux-arm64 /usr/local/bin/radar-agent; \
+    fi && \
+    chmod +x /usr/local/bin/radar-agent && \
+    rm -rf /tmp/radar-agent-*
+
+USER appuser
+
+# Environment defaults
+ENV AGENT_CONFIG=/etc/agent/config.yaml \
+    AGENT_TLS_CERT=/certs/server.pem \
+    AGENT_TLS_KEY=/certs/server.key
+
+# Expose volumes for certs and config
+VOLUME ["/certs", "/etc/agent"]
+
+# Healthcheck for orchestrators
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD ["radar-agent", "--health"] || exit 1
+
+ENTRYPOINT ["radar-agent"]
+CMD ["--config", "/etc/agent/config.yaml"]

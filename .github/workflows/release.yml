@@ -33,6 +33,7 @@ jobs:
           # Copy all binaries to root for consistent access
           cp ./binaries/radar-agent-linux/radar-agent-linux ./radar-agent-linux
           cp ./binaries/radar-agent-linux-musl/radar-agent-linux-musl ./radar-agent-linux-musl
+          cp ./binaries/radar-agent-linux-arm64/radar-agent-linux-arm64 ./radar-agent-linux-arm64
           cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin
 
           # Make binaries executable
@@ -51,6 +52,7 @@ jobs:
           path: |
             radar-agent-linux
             radar-agent-linux-musl
+            radar-agent-linux-arm64
             radar-agent-darwin
           retention-days: 1
 
@@ -67,6 +69,9 @@ jobs:
         with:
           name: agent-binaries
           path: ./
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -98,33 +103,31 @@ jobs:
         run: |
           echo "tag_name=${{ github.event.client_payload.ref }}" >> $GITHUB_OUTPUT
 
-      - name: Build and push Debian image
+      - name: Build and push multi-platform Debian image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/Dockerfile
-          build-args: |
-            BINARY=radar-agent-linux
+          file: ./docker/Dockerfile.multiplatform
           push: true
           tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag_name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:debian-${{ steps.tag.outputs.tag_name }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:debian-latest
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
 
-      - name: Build and push Alpine image
+      - name: Build and push multi-platform Alpine image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/Dockerfile.alpine
-          build-args: |
-            BINARY=radar-agent-linux-musl
+          file: ./docker/Dockerfile.alpine.multiplatform
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpine-${{ steps.tag.outputs.tag_name }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:alpine-latest
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
 
   release:
     name: Create Release
@@ -156,7 +159,7 @@ jobs:
         run: |
           # Create and explicitly sign the tag with -s flag
           git tag -s ${{ steps.tag.outputs.tag_name }} -m "Release ${{ steps.tag.outputs.tag_name }}" --force
-          
+
           # Push the signed tag to the repository
           git push origin ${{ steps.tag.outputs.tag_name }} --force
 
@@ -168,6 +171,7 @@ jobs:
           files: |
             radar-agent-linux
             radar-agent-linux-musl
+            radar-agent-linux-arm64
             radar-agent-darwin
           make_latest: true
           body: |
@@ -175,17 +179,22 @@ jobs:
 
             ### Quick Install
 
-            **Linux (glibc):**
+            **Linux AMD64 (glibc):**
             ```bash
             curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux" -o radar-agent
             ```
 
-            **Linux (musl):**
+            **Linux AMD64 (musl):**
             ```bash
             curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-musl" -o radar-agent
             ```
 
-            **macOS:**
+            **Linux ARM64:**
+            ```bash
+            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-arm64" -o radar-agent
+            ```
+
+            **macOS (Apple Silicon):**
             ```bash
             curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-darwin" -o radar-agent
             ```
@@ -196,13 +205,25 @@ jobs:
             sudo cp radar-agent /usr/local/bin/radar-agent
             ```
 
-            **Docker:**
+            **Docker (Multi-Platform - AMD64 & ARM64):**
             ```bash
-            # Alpine (recommended)
-            docker pull ghcr.io/redis-field-engineering/radar-agent:alpine-${{ steps.tag.outputs.tag_name }}
+            # Latest (Debian-based, works on both AMD64 and ARM64)
+            docker pull ghcr.io/redis-field-engineering/radar-agent:latest
 
+            # Specific version
+            docker pull ghcr.io/redis-field-engineering/radar-agent:${{ steps.tag.outputs.tag_name }}
+
+            # Alpine (recommended for minimal size)
+            docker pull ghcr.io/redis-field-engineering/radar-agent:alpine-latest
+            
             # Debian
-            docker pull ghcr.io/redis-field-engineering/radar-agent:debian-${{ steps.tag.outputs.tag_name }}
+            docker pull ghcr.io/redis-field-engineering/radar-agent:debian-latest
             ```
+
+            ### Platform Support
+
+            - **AMD64 (x86_64)**: All binaries and Docker images
+            - **ARM64 (aarch64)**: Native binary + multi-platform Docker images
+            - **Apple Silicon (M1/M2/M3)**: Native macOS binary + ARM64 Docker images
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
