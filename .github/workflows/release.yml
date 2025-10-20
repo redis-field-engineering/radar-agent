@@ -193,13 +193,13 @@ jobs:
             ```
 
             **Linux ARM64 (glibc):**
+            ```bash
+            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-arm64" -o radar-agent
+            ```
 
             **Linux ARM64 (musl - for Alpine):**
             ```bash
             curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-arm64-musl" -o radar-agent
-            ```
-            ```bash
-            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-arm64" -o radar-agent
             ```
 
             **macOS (Apple Silicon):**
