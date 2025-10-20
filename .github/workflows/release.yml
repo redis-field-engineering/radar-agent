@@ -35,23 +35,10 @@ jobs:
           cp ./binaries/radar-agent-linux/radar-agent-linux ./radar-agent-linux
           cp ./binaries/radar-agent-linux-musl/radar-agent-linux-musl ./radar-agent-linux-musl
 
-          # Darwin x64 (Intel Mac) - check both old and new naming
-          if [ -d "./binaries/radar-agent-darwin-x64" ]; then
-            cp ./binaries/radar-agent-darwin-x64/radar-agent-darwin-x64 ./radar-agent-darwin-x64
-          elif [ -d "./binaries/radar-agent-darwin" ]; then
-            cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin-x64
-          fi
-
-          # ARM64 binaries (if they exist)
-          if [ -d "./binaries/radar-agent-linux-arm64" ]; then
-            cp ./binaries/radar-agent-linux-arm64/radar-agent-linux-arm64 ./radar-agent-linux-arm64
-          fi
-          if [ -d "./binaries/radar-agent-linux-musl-arm64" ]; then
-            cp ./binaries/radar-agent-linux-musl-arm64/radar-agent-linux-musl-arm64 ./radar-agent-linux-musl-arm64
-          fi
-          if [ -d "./binaries/radar-agent-darwin-arm64" ]; then
-            cp ./binaries/radar-agent-darwin-arm64/radar-agent-darwin-arm64 ./radar-agent-darwin-arm64
-          fi
+          # ARM64 and additional platform binaries
+          cp ./binaries/radar-agent-linux-arm64/radar-agent-linux-arm64 ./radar-agent-linux-arm64
+          cp ./binaries/radar-agent-darwin-x64/radar-agent-darwin-x64 ./radar-agent-darwin-x64
+          cp ./binaries/radar-agent-darwin-arm64/radar-agent-darwin-arm64 ./radar-agent-darwin-arm64
 
           # Make binaries executable
           chmod +x radar-agent-*
