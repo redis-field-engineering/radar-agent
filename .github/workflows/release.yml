@@ -34,6 +34,8 @@ jobs:
           cp ./binaries/radar-agent-linux/radar-agent-linux ./radar-agent-linux
           cp ./binaries/radar-agent-linux-musl/radar-agent-linux-musl ./radar-agent-linux-musl
           cp ./binaries/radar-agent-linux-arm64/radar-agent-linux-arm64 ./radar-agent-linux-arm64
+            radar-agent-linux-arm64-musl
+          cp ./binaries/radar-agent-linux-arm64-musl/radar-agent-linux-arm64-musl ./radar-agent-linux-arm64-musl
           cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin
 
           # Make binaries executable
@@ -53,6 +55,7 @@ jobs:
             radar-agent-linux
             radar-agent-linux-musl
             radar-agent-linux-arm64
+            radar-agent-linux-arm64-musl
             radar-agent-darwin
           retention-days: 1
 
@@ -172,6 +175,7 @@ jobs:
             radar-agent-linux
             radar-agent-linux-musl
             radar-agent-linux-arm64
+            radar-agent-linux-arm64-musl
             radar-agent-darwin
           make_latest: true
           body: |
@@ -189,7 +193,12 @@ jobs:
             curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-musl" -o radar-agent
             ```
 
-            **Linux ARM64:**
+            **Linux ARM64 (glibc):**
+
+            **Linux ARM64 (musl - for Alpine):**
+            ```bash
+            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-arm64-musl" -o radar-agent
+            ```
             ```bash
             curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-arm64" -o radar-agent
             ```
