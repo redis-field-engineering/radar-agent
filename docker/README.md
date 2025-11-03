@@ -1,38 +1,38 @@
-# Docker Files for Radar Agent
+# Docker Files for Radar Collector
 
-This directory contains Docker configurations for packaging and deploying the Radar Agent using pre-built binaries.
+This directory contains Docker configurations for packaging and deploying the Radar Collector using pre-built binaries.
 
 ## Available Images
 
 ### `Dockerfile` (Debian)
 **Target**: Production deployments with standard glibc
 - **Base**: `debian:bookworm-slim`
-- **Binary**: Pre-built radar-agent-linux (glibc)
+- **Binary**: Pre-built radar-collector-linux (glibc)
 - **Use Cases**: Modern Linux distributions, Kubernetes, Docker Compose
-- **Registry**: `ghcr.io/redis-field-engineering/radar-agent:debian-latest`
+- **Registry**: `ghcr.io/redis-field-engineering/radar-collector:debian-latest`
 
 ### `Dockerfile.alpine` (Alpine)
 **Target**: Minimal deployments with musl libc
 - **Base**: `alpine:3.18`
-- **Binary**: Pre-built radar-agent-linux-musl (musl)
+- **Binary**: Pre-built radar-collector-linux-musl (musl)
 - **Use Cases**: Alpine Linux, minimal containers, embedded systems
-- **Registry**: `ghcr.io/redis-field-engineering/radar-agent:alpine-latest`
+- **Registry**: `ghcr.io/redis-field-engineering/radar-collector:alpine-latest`
 
 ## Quick Start
 
 ```bash
 # Pull latest Alpine image (recommended)
-docker pull ghcr.io/redis-field-engineering/radar-agent:alpine-latest
+docker pull ghcr.io/redis-field-engineering/radar-collector:alpine-latest
 
 # Pull latest Debian image
-docker pull ghcr.io/redis-field-engineering/radar-agent:debian-latest
+docker pull ghcr.io/redis-field-engineering/radar-collector:debian-latest
 
 # Run with default config
-docker run --rm ghcr.io/redis-field-engineering/radar-agent:alpine-latest --help
+docker run --rm ghcr.io/redis-field-engineering/radar-collector:alpine-latest --help
 
 # Run with custom config
-docker run -v $(pwd)/my-config.yaml:/etc/agent/config.yaml \
-  ghcr.io/redis-field-engineering/radar-agent:alpine-latest
+docker run -v $(pwd)/my-config.yaml:/etc/collector/config.yaml \
+  ghcr.io/redis-field-engineering/radar-collector:alpine-latest
 ```
 
 ## Image Selection Guide
@@ -50,15 +50,15 @@ docker run -v $(pwd)/my-config.yaml:/etc/agent/config.yaml \
 Images are built automatically via GitHub Actions when triggered by the main radar repository:
 
 1. **Binary Source**: Pre-built binaries from `redis-field-engineering/radar` repository
-2. **Trigger**: Repository dispatch event `radar-agent-built`
+2. **Trigger**: Repository dispatch event `radar-collector-built`
 3. **Build**: Docker images built and pushed to GitHub Container Registry
 4. **No source code required**: Only binaries and configuration files
 
 ## Environment Variables
 
 All images support these environment variables:
-- `AGENT_TLS_CERT` - Path to TLS certificate (default: `/certs/server.pem`)
-- `AGENT_TLS_KEY` - Path to TLS private key (default: `/certs/server.key`)
+- `COLLECTOR_TLS_CERT` - Path to TLS certificate (default: `/certs/server.pem`)
+- `COLLECTOR_TLS_KEY` - Path to TLS private key (default: `/certs/server.key`)
 - `RUST_LOG` - Log level override (e.g., `debug`, `info`)
 
 ## Security

@@ -2,7 +2,7 @@ FROM debian:bookworm-slim
 
 ARG BINARY
 
-LABEL org.opencontainers.image.source="https://github.com/redis-field-engineering/radar-agent" \
+LABEL org.opencontainers.image.source="https://github.com/redis-field-engineering/radar-collector" \
   org.opencontainers.image.licenses="Redis, Inc." \
   org.opencontainers.image.authors="Radar Team"
 
@@ -16,29 +16,29 @@ RUN apt-get update && \
     adduser --disabled-password --gecos "" appuser
 
 # Create necessary directories
-RUN mkdir -p /certs /etc/agent /home/appuser/bin && \
-    chown -R appuser:appuser /certs /etc/agent /home/appuser
+RUN mkdir -p /certs /etc/collector /home/appuser/bin && \
+    chown -R appuser:appuser /certs /etc/collector /home/appuser
 
 # Copy default config (customers may override via volume)
-COPY --chown=appuser:appuser radar-agent-config-sample.yml /etc/agent/config.yaml
+COPY --chown=appuser:appuser radar-collector-config-sample.yml /etc/collector/config.yaml
 
-# Copy the agent binary
-COPY ${BINARY} /usr/local/bin/radar-agent
-RUN chmod +x /usr/local/bin/radar-agent
+# Copy the collector binary
+COPY ${BINARY} /usr/local/bin/radar-collector
+RUN chmod +x /usr/local/bin/radar-collector
 
 USER appuser
 
 # Environment defaults
-ENV AGENT_CONFIG=/etc/agent/config.yaml \
-    AGENT_TLS_CERT=/certs/server.pem \
-    AGENT_TLS_KEY=/certs/server.key
+ENV COLLECTOR_CONFIG=/etc/collector/config.yaml \
+    COLLECTOR_TLS_CERT=/certs/server.pem \
+    COLLECTOR_TLS_KEY=/certs/server.key
 
 # Expose volumes for certs and config
-VOLUME ["/certs", "/etc/agent"]
+VOLUME ["/certs", "/etc/collector"]
 
 # Healthcheck for orchestrators
 HEALTHCHECK --interval=30s --timeout=5s \
-  CMD ["radar-agent", "--health"] || exit 1
+  CMD ["radar-collector", "--health"] || exit 1
 
-ENTRYPOINT ["radar-agent"]
-CMD ["--config", "/etc/agent/config.yaml"]
+ENTRYPOINT ["radar-collector"]
+CMD ["--config", "/etc/collector/config.yaml"]

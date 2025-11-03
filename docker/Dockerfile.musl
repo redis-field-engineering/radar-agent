@@ -1,13 +1,13 @@
 # Dockerfile.musl
 # -----------------------------------------------------------------------------
-# Purpose: Builds the radar-agent binary using the musl libc toolchain to produce
+# Purpose: Builds the radar-collector binary using the musl libc toolchain to produce
 # a fully static binary that runs on older distros like Ubuntu 18.04 or Alpine.
 #
 # Use this to validate musl-based builds run correctly under emulated or legacy targets.
 #
 # Usage:
-#   docker build -f Dockerfile.musl -t radar-agent-musl .
-#   docker run --rm --platform linux/amd64 radar-agent-musl
+#   docker build -f Dockerfile.musl -t radar-collector-musl .
+#   docker run --rm --platform linux/amd64 radar-collector-musl
 
 # -------- Build Stage --------
 FROM --platform=linux/amd64 rust:1.88-slim as builder
@@ -26,9 +26,9 @@ ENV CARGO_HOME=/cargo
 WORKDIR /app
 
 COPY proto ./proto
-COPY agent ./agent
+COPY collector ./collector
 
-WORKDIR /app/agent
+WORKDIR /app/collector
 RUN cargo build --release --target x86_64-unknown-linux-musl
 
 # -------- Runtime Stage --------
@@ -36,14 +36,14 @@ FROM --platform=linux/amd64 alpine:3.20
 
 RUN adduser -D -u 1000 appuser
 
-COPY --from=builder /app/agent/target/x86_64-unknown-linux-musl/release/radar-agent /usr/local/bin/radar-agent
+COPY --from=builder /app/collector/target/x86_64-unknown-linux-musl/release/radar-collector /usr/local/bin/radar-collector
 
-ENV AGENT_TLS_CERT=/certs/server.pem
-ENV AGENT_TLS_KEY=/certs/server.key
+ENV COLLECTOR_TLS_CERT=/certs/server.pem
+ENV COLLECTOR_TLS_KEY=/certs/server.key
 
 # Healthcheck for orchestrators
 HEALTHCHECK --interval=30s --timeout=5s \
-  CMD ["/usr/local/bin/radar-agent", "--health"] || exit 1
+  CMD ["/usr/local/bin/radar-collector", "--health"] || exit 1
 
 USER appuser
-ENTRYPOINT ["/usr/local/bin/radar-agent"]
+ENTRYPOINT ["/usr/local/bin/radar-collector"]

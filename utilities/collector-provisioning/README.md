@@ -1,6 +1,6 @@
-# Redis Enterprise Agent Provisioning Tool
+# Redis Enterprise Collector Provisioning Tool
 
-This utility helps create and manage permissions in Redis Enterprise for the Radar agent. It can provision multiple Redis Enterprise clusters with the necessary ACLs, roles, users, and database permissions for agent monitoring.
+This utility helps create and manage permissions in Redis Enterprise for the Radar collector. It can provision multiple Redis Enterprise clusters with the necessary ACLs, roles, users, and database permissions for collector monitoring.
 
 ## Features
 
@@ -30,18 +30,18 @@ or if using the standalone binary
 # Single cluster
 python3 enterprise_credentials.py --endpoint https://localhost:9443 \
   --username admin@re.demo --password redis123 \
-  --agent-name radar-agent --agent-password radar##123 --create
+  --collector-name radar-collector --collector-password radar##123 --create
 
 # Multi-cluster from YAML config
-python3 enterprise_credentials.py --agent-yaml-config agent-config.yaml \
-  --agent-name radar-agent --agent-password radar##123 --create
+python3 enterprise_credentials.py --collector-yaml-config collector-config.yaml \
+  --collector-name radar-collector --collector-password radar##123 --create
 ```
 
 ## Configuration
 
-### Pulling from Agent Config
+### Pulling from Collector Config
 
-The tool supports pulling Redis Enterprise endpoints from the Radar agent config.  It will iterate over the deployments looking for the ENTERPRISE type and use the information there to connect to the Redis Enterprise cluster and provision agent access.
+The tool supports pulling Redis Enterprise endpoints from the Radar collector config.  It will iterate over the deployments looking for the ENTERPRISE type and use the information there to connect to the Redis Enterprise cluster and provision collector access.
 
 ```yaml
 deployment:
@@ -72,13 +72,13 @@ Set environment variables to avoid hardcoding credentials:
 ```bash
 export ADMIN_USER=admin@re.demo
 export ADMIN_PASSWORD=redis123
-export AGENT_NAME=radar-agent
-export AGENT_PASSWORD=radar123
+export COLLECTOR_NAME=radar-collector
+export COLLECTOR_PASSWORD=radar123
 ```
 
 ## Usage Examples
 
-### Create New Agent Permissions
+### Create New Collector Permissions
 ```bash
 # Interactive mode
 python3 enterprise_credentials.py
@@ -86,40 +86,40 @@ python3 enterprise_credentials.py
 # Command line with custom ACL rules
 python3 enterprise_credentials.py --endpoint https://redis.company.com:9443 \
   --username admin@company.com --password secure123 \
-  --agent-name monitoring-agent \
+  --collector-name monitoring-collector \
   --acl-rules "+@read +info +ping +config|get +client|list +memory +latency +slowlog" \
   --create
 ```
 
 ### Update Existing Permissions
 ```bash
-# Update permissions for existing agent
-python3 enterprise_credentials.py --agent-name radar-agent --update
+# Update permissions for existing collector
+python3 enterprise_credentials.py --collector-name radar-collector --update
 
 # Update only production databases
-python3 enterprise_credentials.py --agent-name radar-agent \
+python3 enterprise_credentials.py --collector-name radar-collector \
   --update --database-filter "prod-.*" --skip-existing
 ```
 
 ### Multi-Cluster Provisioning
 ```bash
 # Provision all ENTERPRISE deployments in config
-python3 enterprise_credentials.py --agent-yaml-config agent-config.yaml \
-  --agent-name radar-agent --create
+python3 enterprise_credentials.py --collector-yaml-config collector-config.yaml \
+  --collector-name radar-collector --create
 
 # Force recreation of existing components
-python3 enterprise_credentials.py --agent-yaml-config agent-config.yaml \
-  --agent-name radar-agent --create --force
+python3 enterprise_credentials.py --collector-yaml-config collector-config.yaml \
+  --collector-name radar-collector --create --force
 ```
 
 ### Production Environment
 ```bash
 # Enable SSL verification for production
 python3 enterprise_credentials.py --endpoint https://redis.company.com:9443 \
-  --verify-ssl --agent-name prod-agent --create
+  --verify-ssl --collector-name prod-collector --create
 
 # Skip database permissions (only create ACL, role, user)
-python3 enterprise_credentials.py --agent-name radar-agent \
+python3 enterprise_credentials.py --collector-name radar-collector \
   --create --skip-all-databases
 ```
 
@@ -131,21 +131,21 @@ python3 enterprise_credentials.py --agent-name radar-agent \
 - `--password`: Admin password
 - `--verify-ssl`: Enable SSL certificate verification
 
-### Agent Options
-- `--agent-yaml-config`: Path to agent YAML config file
-- `--agent-name`: Agent name for permissions
-- `--agent-password`: Agent password
-- `--agent-email`: Agent email (default: agent-name@example.com)
+### Collector Options
+- `--collector-yaml-config`: Path to collector YAML config file
+- `--collector-name`: Collector name for permissions
+- `--collector-password`: Collector password
+- `--collector-email`: Collector email (default: collector-name@example.com)
 
 ### ACL Options
-- `--acl-rules`: ACL rules for the agent (default: monitoring permissions)
+- `--acl-rules`: ACL rules for the collector (default: monitoring permissions)
 
 ### Role Options
 - `--role-management`: Role management level (default: cluster_member)
 
 ### Action Options
-- `--create`: Force create new agent permissions
-- `--update`: Force update existing agent permissions
+- `--create`: Force create new collector permissions
+- `--update`: Force update existing collector permissions
 - `--force`: Force recreation of existing components
 
 ### Database Options

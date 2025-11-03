@@ -1,17 +1,17 @@
 # =============================================================================
-# Radar Agent Configuration File
+# Radar Collector Configuration File
 # =============================================================================
 # Complete documentation: https://redis-field-engineering.github.io/radar/
 
 # -----------------------------------------------------------------------------
-# Agent Section - Global agent configuration
+# Collector Section - Global collector configuration
 # -----------------------------------------------------------------------------
-agent:
-  # Unique identifier for this agent instance (required)
-  id: "radar-agent-001"
+collector:
+  # Unique identifier for this collector instance (required)
+  id: "radar-collector-001"
 
   # Collection interval with time unit (s, m, h)
-  # How frequently the agent will collect metrics from Redis instances
+  # How frequently the collector will collect metrics from Redis instances
   # Default: 60s
   collection_interval: "60s"
 

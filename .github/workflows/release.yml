@@ -1,8 +1,8 @@
-name: Build and Release Agent
+name: Build and Release Collector
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: redis-field-engineering/radar-agent
+  IMAGE_NAME: redis-field-engineering/radar-collector
 
 permissions:
   contents: write
@@ -10,14 +10,14 @@ permissions:
 
 on:
   repository_dispatch:
-    types: [radar-agent-built]
+    types: [radar-collector-built]
 
 jobs:
   copy-binaries:
     name: Download Binaries from Radar Repo
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout radar-agent repo
+      - name: Checkout radar-collector repo
         uses: actions/checkout@v4
 
       - name: Download binaries from radar repository workflow
@@ -31,31 +31,31 @@ jobs:
       - name: Prepare binaries for Docker build and release
         run: |
           # Copy all binaries to root for consistent access
-          cp ./binaries/radar-agent-linux/radar-agent-linux ./radar-agent-linux
-          cp ./binaries/radar-agent-linux-musl/radar-agent-linux-musl ./radar-agent-linux-musl
-          cp ./binaries/radar-agent-linux-arm64/radar-agent-linux-arm64 ./radar-agent-linux-arm64
-          cp ./binaries/radar-agent-linux-arm64-musl/radar-agent-linux-arm64-musl ./radar-agent-linux-arm64-musl
-          cp ./binaries/radar-agent-darwin/radar-agent-darwin ./radar-agent-darwin
+          cp ./binaries/radar-collector-linux/radar-collector-linux ./radar-collector-linux
+          cp ./binaries/radar-collector-linux-musl/radar-collector-linux-musl ./radar-collector-linux-musl
+          cp ./binaries/radar-collector-linux-arm64/radar-collector-linux-arm64 ./radar-collector-linux-arm64
+          cp ./binaries/radar-collector-linux-arm64-musl/radar-collector-linux-arm64-musl ./radar-collector-linux-arm64-musl
+          cp ./binaries/radar-collector-darwin/radar-collector-darwin ./radar-collector-darwin
 
           # Make binaries executable
-          chmod +x radar-agent-*
+          chmod +x radar-collector-*
 
           # Log what we received
           echo "✅ Downloaded binaries for tag: ${{ github.event.client_payload.ref }}"
 
           # Verify binaries
-          ls -la radar-agent-*
+          ls -la radar-collector-*
 
       - name: Upload binaries for Docker build and release
         uses: actions/upload-artifact@v4
         with:
-          name: agent-binaries
+          name: collector-binaries
           path: |
-            radar-agent-linux
-            radar-agent-linux-musl
-            radar-agent-linux-arm64
-            radar-agent-linux-arm64-musl
-            radar-agent-darwin
+            radar-collector-linux
+            radar-collector-linux-musl
+            radar-collector-linux-arm64
+            radar-collector-linux-arm64-musl
+            radar-collector-darwin
           retention-days: 1
 
   docker:
@@ -63,13 +63,13 @@ jobs:
     needs: [copy-binaries]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout radar-agent repo
+      - name: Checkout radar-collector repo
         uses: actions/checkout@v4
 
       - name: Download binaries
         uses: actions/download-artifact@v4
         with:
-          name: agent-binaries
+          name: collector-binaries
           path: ./
 
       - name: Set up QEMU
@@ -91,7 +91,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           labels: |
-            org.opencontainers.image.source=https://github.com/redis-field-engineering/radar-agent
+            org.opencontainers.image.source=https://github.com/redis-field-engineering/radar-collector
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -136,13 +136,13 @@ jobs:
     needs: [docker]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout radar-agent repo
+      - name: Checkout radar-collector repo
         uses: actions/checkout@v4
 
       - name: Download binaries
         uses: actions/download-artifact@v4
         with:
-          name: agent-binaries
+          name: collector-binaries
           path: ./
 
       - name: Get tag name
@@ -169,63 +169,63 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag_name }}
-          name: "Radar Agent ${{ steps.tag.outputs.tag_name }}"
+          name: "Radar Collector ${{ steps.tag.outputs.tag_name }}"
           files: |
-            radar-agent-linux
-            radar-agent-linux-musl
-            radar-agent-linux-arm64
-            radar-agent-linux-arm64-musl
-            radar-agent-darwin
+            radar-collector-linux
+            radar-collector-linux-musl
+            radar-collector-linux-arm64
+            radar-collector-linux-arm64-musl
+            radar-collector-darwin
           make_latest: true
           body: |
-            ## Radar Agent Release ${{ steps.tag.outputs.tag_name }}
+            ## Radar Collector Release ${{ steps.tag.outputs.tag_name }}
 
             ### Quick Install
 
             **Linux AMD64 (glibc):**
             ```bash
-            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux" -o radar-agent
+            curl -L "https://github.com/redis-field-engineering/radar-collector/releases/download/${{ steps.tag.outputs.tag_name }}/radar-collector-linux" -o radar-collector
             ```
 
             **Linux AMD64 (musl):**
             ```bash
-            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-musl" -o radar-agent
+            curl -L "https://github.com/redis-field-engineering/radar-collector/releases/download/${{ steps.tag.outputs.tag_name }}/radar-collector-linux-musl" -o radar-collector
             ```
 
             **Linux ARM64 (glibc):**
             ```bash
-            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-arm64" -o radar-agent
+            curl -L "https://github.com/redis-field-engineering/radar-collector/releases/download/${{ steps.tag.outputs.tag_name }}/radar-collector-linux-arm64" -o radar-collector
             ```
 
             **Linux ARM64 (musl - for Alpine):**
             ```bash
-            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-linux-arm64-musl" -o radar-agent
+            curl -L "https://github.com/redis-field-engineering/radar-collector/releases/download/${{ steps.tag.outputs.tag_name }}/radar-collector-linux-arm64-musl" -o radar-collector
             ```
 
             **macOS (Apple Silicon):**
             ```bash
-            curl -L "https://github.com/redis-field-engineering/radar-agent/releases/download/${{ steps.tag.outputs.tag_name }}/radar-agent-darwin" -o radar-agent
+            curl -L "https://github.com/redis-field-engineering/radar-collector/releases/download/${{ steps.tag.outputs.tag_name }}/radar-collector-darwin" -o radar-collector
             ```
 
             **Install binary:**
             ```bash
-            chmod +x radar-agent
-            sudo cp radar-agent /usr/local/bin/radar-agent
+            chmod +x radar-collector
+            sudo cp radar-collector /usr/local/bin/radar-collector
             ```
 
             **Docker (Multi-Platform - AMD64 & ARM64):**
             ```bash
             # Latest (Debian-based, works on both AMD64 and ARM64)
-            docker pull ghcr.io/redis-field-engineering/radar-agent:latest
+            docker pull ghcr.io/redis-field-engineering/radar-collector:latest
 
             # Specific version
-            docker pull ghcr.io/redis-field-engineering/radar-agent:${{ steps.tag.outputs.tag_name }}
+            docker pull ghcr.io/redis-field-engineering/radar-collector:${{ steps.tag.outputs.tag_name }}
 
             # Alpine (recommended for minimal size)
-            docker pull ghcr.io/redis-field-engineering/radar-agent:alpine-latest
-            
+            docker pull ghcr.io/redis-field-engineering/radar-collector:alpine-latest
+
             # Debian
-            docker pull ghcr.io/redis-field-engineering/radar-agent:debian-latest
+            docker pull ghcr.io/redis-field-engineering/radar-collector:debian-latest
             ```
 
             ### Platform Support
