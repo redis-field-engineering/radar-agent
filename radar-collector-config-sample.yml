@@ -81,7 +81,7 @@ deployments:
     type: "cluster"
 
     # Initial seed nodes for cluster discovery
-    # The agent will discover all other nodes automatically
+    # The collector will discover all other nodes automatically
     seed_nodes:
       - "cluster1.example.com:7000"
       - "cluster2.example.com:7000"
@@ -115,7 +115,7 @@ deployments:
 # =============================================================================
 # Environment Variable Examples
 # =============================================================================
-# Set these environment variables before running the agent:
+# Set these environment variables before running the collector:
 #
 # export RADAR_API_KEY="your-api-key-here"
 # export REDIS_PASSWORD="your-redis-password"
