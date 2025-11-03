@@ -18,7 +18,7 @@ The build process creates a single executable file that includes all Python depe
 
 1. Navigate to the build directory:
    ```bash
-   cd utilities/agent-provisioning
+   cd utilities/collector-provisioning
    ```
 
 2. Run the build script:
@@ -148,7 +148,7 @@ For automated builds, you can integrate the build process into your CI/CD pipeli
 # Example GitHub Actions step
 - name: Build executable
   run: |
-    cd utilities/agent-provisioning
+    cd utilities/collector-provisioning
     ./build.sh
     ls -la dist/enterprise-credentials
 ```
