@@ -1,12 +1,12 @@
 # Dockerfile.ubuntu18
 # -----------------------------------------------------------------------------
-# Purpose: Tests whether the compiled radar-agent binary can run on Ubuntu 18.04.
+# Purpose: Tests whether the compiled radar-collector binary can run on Ubuntu 18.04.
 # This simulates a minimal, older glibc-based Linux runtime environment.
-# Build manually using a recent toolchain, then copy the radar-agent binary into this image.
+# Build manually using a recent toolchain, then copy the radar-collector binary into this image.
 #
 # Usage:
-#   docker build -f Dockerfile.ubuntu18 -t radar-agent-ubuntu18 .
-#   docker run --rm radar-agent-ubuntu18
+#   docker build -f Dockerfile.ubuntu18 -t radar-collector-ubuntu18 .
+#   docker run --rm radar-collector-ubuntu18
 
 # ---- Build Stage ----
 FROM ubuntu:18.04 AS builder
@@ -32,9 +32,9 @@ ENV CARGO_HOME=/cargo
 WORKDIR /app
 
 COPY proto ./proto
-COPY agent ./agent
+COPY collector ./collector
 
-WORKDIR /app/agent
+WORKDIR /app/collector
 RUN cargo build --release
 
 # ---- Runtime Stage ----
@@ -48,15 +48,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     adduser --disabled-password --gecos "" appuser
 
-COPY --from=builder /app/agent/target/release/radar-agent /usr/local/bin/radar-agent
+COPY --from=builder /app/collector/target/release/radar-collector /usr/local/bin/radar-collector
 
-ENV AGENT_TLS_CERT=/certs/server.pem
-ENV AGENT_TLS_KEY=/certs/server.key
+ENV COLLECTOR_TLS_CERT=/certs/server.pem
+ENV COLLECTOR_TLS_KEY=/certs/server.key
 
 # Healthcheck for orchestrators
 HEALTHCHECK --interval=30s --timeout=5s \
-  CMD ["/usr/local/bin/radar-agent", "--health"] || exit 1
+  CMD ["/usr/local/bin/radar-collector", "--health"] || exit 1
 
 USER appuser
 
-ENTRYPOINT ["/usr/local/bin/radar-agent"]
+ENTRYPOINT ["/usr/local/bin/radar-collector"]

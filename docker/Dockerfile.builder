@@ -12,9 +12,9 @@ ENV CARGO_HOME=/cargo
 WORKDIR /app
 
 COPY proto ./proto
-COPY agent ./agent
+COPY collector ./collector
 
-WORKDIR /app/agent
+WORKDIR /app/collector
 RUN cargo build --release
 
 FROM debian:bookworm-slim
@@ -27,11 +27,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     adduser --disabled-password --gecos "" appuser
 
-COPY --from=builder /app/agent/target/release/radar-agent /usr/local/bin/radar-agent
+COPY --from=builder /app/collector/target/release/radar-collector /usr/local/bin/radar-collector
 
-ENV AGENT_TLS_CERT=/certs/server.pem
-ENV AGENT_TLS_KEY=/certs/server.key
+ENV COLLECTOR_TLS_CERT=/certs/server.pem
+ENV COLLECTOR_TLS_KEY=/certs/server.key
 
 USER appuser
 
-ENTRYPOINT ["/usr/local/bin/radar-agent"]
+ENTRYPOINT ["/usr/local/bin/radar-collector"]
