@@ -23,7 +23,7 @@ jobs:
       - name: Download binaries from radar repository workflow
         uses: dawidd6/action-download-artifact@v3
         with:
-          github_token: ${{ secrets.RADAR_COLLECTOR_TOKEN }}
+          github_token: ${{ secrets.RADAR_AGENT_TOKEN }}
           run_id: ${{ github.event.client_payload.workflow_run_id }}
           repo: redis-field-engineering/radar
           path: ./binaries
