@@ -45,8 +45,8 @@ ehthumbs.db
 Thumbs.db
 
 # Generated configuration files
-agent.yaml
-agent-config.yaml
+collector.yaml
+collector-config.yaml
 *.yaml.bak
 *.yaml.backup
 

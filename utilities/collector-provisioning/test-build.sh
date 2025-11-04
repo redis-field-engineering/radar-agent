@@ -12,7 +12,7 @@ echo "=========================================="
 # Check if we're in the right directory
 if [ ! -f "enterprise_credentials.py" ]; then
     echo "Error: enterprise_credentials.py not found in current directory"
-    echo "Please run this script from the utilities/agent-provisioning directory"
+    echo "Please run this script from the utilities/collector-provisioning directory"
     exit 1
 fi
 
